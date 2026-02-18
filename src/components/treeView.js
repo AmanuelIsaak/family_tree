@@ -284,19 +284,81 @@ export function renderTree() {
     return true;
   }
 
+  // ===== BRACKET LAYOUT =====
+  function bracketLayout() {
+    const ego = gm(state.egoId);
+    if (!ego) return false;
+
+    const COL_W = NW + 80;
+    const BASE_ROW = NH + 24;
+
+    let fatherId = ego.parent1Id;
+    let motherId = ego.parent2Id;
+    if (!motherId && fatherId) { const fa = gm(fatherId); if (fa && fa.spouseId) motherId = fa.spouseId; }
+    if (!fatherId && motherId) { const mo = gm(motherId); if (mo && mo.spouseId) fatherId = mo.spouseId; }
+    if (!fatherId && !motherId) return false;
+
+    function ancDepth(id, vis) {
+      if (!vis) vis = new Set();
+      if (!id || vis.has(id)) return 0;
+      vis.add(id);
+      const m = gm(id);
+      if (!m) return 0;
+      const p2 = m.parent2Id || (m.parent1Id && gm(m.parent1Id) ? gm(m.parent1Id).spouseId : null);
+      return 1 + Math.max(m.parent1Id ? ancDepth(m.parent1Id, vis) : 0, p2 ? ancDepth(p2, vis) : 0);
+    }
+
+    const patDepth = fatherId ? ancDepth(fatherId) : 0;
+    const matDepth = motherId ? ancDepth(motherId) : 0;
+    const maxD = Math.max(patDepth, matDepth, 1);
+    const slots = Math.pow(2, maxD);
+    const TOTAL_H = Math.max(slots * BASE_ROW, BASE_ROW * 4);
+    const CENTER_Y = TOTAL_H / 2;
+    const CENTER_X = 40 + (maxD + 1) * COL_W;
+
+    pos[state.egoId] = { x: CENTER_X, y: CENTER_Y - NH / 2, w: NW, h: NH };
+    laid.add(state.egoId);
+    primary.add(state.egoId);
+
+    function place(personId, col, yTop, yBot, side) {
+      if (!personId || laid.has(personId)) return;
+      const m = gm(personId);
+      if (!m) return;
+      const x = side === 'pat' ? CENTER_X - col * COL_W : CENTER_X + col * COL_W;
+      pos[personId] = { x, y: (yTop + yBot) / 2 - NH / 2, w: NW, h: NH };
+      laid.add(personId);
+      primary.add(personId);
+      let p1 = m.parent1Id;
+      let p2 = m.parent2Id;
+      if (!p2 && p1) { const pa = gm(p1); if (pa && pa.spouseId) p2 = pa.spouseId; }
+      const midY = (yTop + yBot) / 2;
+      if (p1) place(p1, col + 1, yTop, midY, side);
+      if (p2 && !laid.has(p2)) place(p2, col + 1, midY, yBot, side);
+    }
+
+    if (fatherId) place(fatherId, 1, 0, TOTAL_H, 'pat');
+    if (motherId) place(motherId, 1, 0, TOTAL_H, 'mat');
+
+    let orphX = 40;
+    const orphY = TOTAL_H + BASE_ROW * 2;
+    state.members.forEach(m => {
+      if (!laid.has(m.id)) { pos[m.id] = { x: orphX, y: orphY, w: NW, h: NH }; laid.add(m.id); orphX += NW + GX; }
+    });
+    return true;
+  }
+
   // ===== RUN LAYOUT =====
   if (layoutMode === 'ego' && state.egoId) {
-    if (!egoLayout()) {
-      // fallback to classic if ego layout fails (no parents)
-      layoutMode = 'classic';
-    }
+    if (!egoLayout()) layoutMode = 'classic';
+  } else if (layoutMode === 'bracket' && state.egoId) {
+    if (!bracketLayout()) layoutMode = 'classic';
   }
 
   // Variables used in draw section (set by classic layout)
   let patEnd = 0, matStart = 0, showPat = true, showMat = true;
   let patRoots = [], matRoots = [];
 
-  if (layoutMode !== 'ego' || !state.egoId) {
+  if (layoutMode === 'classic' || !state.egoId) {
   // Group roots by side
   const spR = new Set();
   state.members.forEach(m => {
@@ -384,7 +446,14 @@ export function renderTree() {
   let s = '<g transform="translate(' + state.panX + ',' + state.panY + ') scale(' + state.scale + ')">';
 
   // Side labels
-  if (layoutMode === 'ego' && state.egoId) {
+  if (layoutMode === 'bracket' && state.egoId) {
+    const ep = pos[state.egoId];
+    if (ep) {
+      s += '<text x="' + (ep.x - 8) + '" y="' + (ep.y - 10) + '" text-anchor="end" font-family="Instrument Serif,serif" font-size="13" fill="var(--t3)" font-style="italic">\u2190 Dad\'s Side</text>';
+      s += '<text x="' + (ep.x + NW + 8) + '" y="' + (ep.y - 10) + '" font-family="Instrument Serif,serif" font-size="13" fill="var(--t3)" font-style="italic">Mom\'s Side \u2192</text>';
+      s += '<text x="' + (ep.x + NW / 2) + '" y="' + (ep.y - 10) + '" text-anchor="middle" font-family="Instrument Serif,serif" font-size="11" fill="var(--acc)" font-style="italic">you</text>';
+    }
+  } else if (layoutMode === 'ego' && state.egoId) {
     // Ego mode: label each side
     const ego = gm(state.egoId);
     if (ego && pos[state.egoId]) {
@@ -422,7 +491,7 @@ export function renderTree() {
   }
 
   // Side divider (classic mode only, "all" mode with both sides)
-  if (layoutMode !== 'ego' && sideFilter === 'all' && patRoots.length && matRoots.length) {
+  if (layoutMode !== 'ego' && layoutMode !== 'bracket' && sideFilter === 'all' && patRoots.length && matRoots.length) {
     let minY = Infinity, maxY = -Infinity;
     Object.values(pos).forEach(p => { minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y + p.h); });
     const divX = (patEnd + matStart) / 2;
@@ -430,10 +499,34 @@ export function renderTree() {
   }
 
   // Edges
-  state.members.forEach(m => {
-    if (m.parent1Id && pos[m.id] && pos[m.parent1Id]) s += mkEdge(pos[m.parent1Id], pos[m.id], false);
-    if (m.parent2Id && pos[m.id] && pos[m.parent2Id]) s += mkEdge(pos[m.parent2Id], pos[m.id], true);
-  });
+  if (layoutMode === 'bracket') {
+    state.members.forEach(m => {
+      if (!pos[m.id]) return;
+      function bEdge(pid) {
+        if (!pid || !pos[pid]) return;
+        const pp = pos[pid], cp = pos[m.id];
+        const py = pp.y + NH / 2, cy = cp.y + NH / 2;
+        let d;
+        if (pp.x + NW <= cp.x + 1) {
+          // parent on left → child on right
+          const px = pp.x + NW, cx = cp.x, mx = (px + cx) / 2;
+          d = 'M' + px + ',' + py + ' L' + mx + ',' + py + ' L' + mx + ',' + cy + ' L' + cx + ',' + cy;
+        } else {
+          // parent on right → child on left
+          const px = pp.x, cx = cp.x + NW, mx = (px + cx) / 2;
+          d = 'M' + px + ',' + py + ' L' + mx + ',' + py + ' L' + mx + ',' + cy + ' L' + cx + ',' + cy;
+        }
+        s += '<path d="' + d + '" fill="none" stroke="var(--edge)" stroke-width="1.5" opacity="0.75"/>';
+      }
+      bEdge(m.parent1Id);
+      bEdge(m.parent2Id);
+    });
+  } else {
+    state.members.forEach(m => {
+      if (m.parent1Id && pos[m.id] && pos[m.parent1Id]) s += mkEdge(pos[m.parent1Id], pos[m.id], false);
+      if (m.parent2Id && pos[m.id] && pos[m.parent2Id]) s += mkEdge(pos[m.parent2Id], pos[m.id], true);
+    });
+  }
 
   // Spouse lines
   const dsp = new Set();
@@ -444,7 +537,15 @@ export function renderTree() {
       dsp.add(k);
       const a = pos[m.id], b = pos[m.spouseId];
       const d = Math.abs((a.x + a.w / 2) - (b.x + b.w / 2));
-      if (d < NW * 3) {
+      if (layoutMode === 'bracket' && d < 5) {
+        // same-column spouse pair → vertical line
+        const sx = a.x + a.w / 2;
+        const y1 = Math.min(a.y + a.h, b.y), y2 = Math.max(a.y + a.h, b.y);
+        if (y2 > y1) {
+          s += '<line x1="' + sx + '" y1="' + y1 + '" x2="' + sx + '" y2="' + y2 + '" stroke="var(--spline)" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.6"/>';
+          s += '<text x="' + sx + '" y="' + ((y1 + y2) / 2 + 3) + '" text-anchor="middle" font-size="8" fill="var(--spline)">\u2665</text>';
+        }
+      } else if (d < NW * 3) {
         const x1 = a.x < b.x ? a.x + a.w : a.x;
         const x2 = a.x < b.x ? b.x : b.x + b.w;
         const my = (a.y + a.h / 2 + b.y + b.h / 2) / 2;
@@ -457,7 +558,7 @@ export function renderTree() {
   });
 
   // Cross-side connection lines: spouse appears on one side, their parents on the other
-  if (sideFilter === 'all') {
+  if (sideFilter === 'all' && layoutMode !== 'bracket') {
     state.members.forEach(m => {
       if (!m.spouseId || !m.parent1Id) return;
       if (!pos[m.id]) return;
