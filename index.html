@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Family Tree</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <div class="sb">
+      <div class="sb-head">
+        <div class="sb-logo">
+          <div class="ico">🌳</div>
+          <h1>Family Tree</h1>
+        </div>
+        <div class="flex gap-1">
+          <button class="icon-btn" id="themeBtn" title="Toggle theme">☀</button>
+        </div>
+      </div>
+      <div class="sb-acts">
+        <button class="btn btn-p flex-1" id="addBtn">+ Add</button>
+        <button class="btn" id="exportBtn" title="Export JSON">↓ Export</button>
+        <button class="btn" id="importBtn" title="Import JSON">↑ Import</button>
+      </div>
+      <div class="sb-search">
+        <div class="srch">
+          <input type="text" id="searchIn" placeholder="Search members...">
+        </div>
+      </div>
+      <div class="sb-list" id="memberList"></div>
+      <div class="sb-foot">
+        <span id="fCount">0 members</span>
+        <span id="fGen">0 generations</span>
+      </div>
+    </div>
+
+    <!-- MAIN AREA -->
+    <div class="main">
+      <div class="tabs">
+        <div class="tab active" data-tab="tree">🌿 Tree View</div>
+        <div class="tab" data-tab="map">🌍 Map View</div>
+      </div>
+
+      <!-- TREE VIEW -->
+      <div class="cv active" id="treeView">
+        <div class="st-bar" id="statsBar"></div>
+        <div class="layout-toggle" id="layoutToggle" style="display:none">
+          <button class="lt-btn active" data-layout="classic">Classic</button>
+          <button class="lt-btn" data-layout="ego">My View</button>
+        </div>
+        <div class="side-filter" id="sideFilter">
+          <button class="sf-btn active" data-side="all">All</button>
+          <button class="sf-btn" data-side="paternal">Dad's</button>
+          <button class="sf-btn" data-side="maternal">Mom's</button>
+        </div>
+        <svg id="treeSvg"></svg>
+        <div class="empty" id="emptyState">
+          <div class="ei">🌱</div>
+          <h3>Start Your Family Tree</h3>
+          <p>Add family members to begin mapping your roots across both sides.</p>
+        </div>
+        <div class="mm" id="minimap" style="display:none">
+          <svg id="mmSvg"></svg>
+        </div>
+        <div class="cv-ctrl">
+          <button class="cb" id="colAllBtn" title="Collapse all">⊟</button>
+          <button class="cb" id="expAllBtn" title="Expand all">⊞</button>
+          <button class="cb" id="zoomInBtn">+</button>
+          <button class="cb" id="zoomOutBtn">−</button>
+          <button class="cb" id="fitBtn">⊡</button>
+        </div>
+      </div>
+
+      <!-- MAP VIEW -->
+      <div class="map-view" id="mapView">
+        <div class="map-wrap" id="mapWrap">
+          <div id="leafletMap"></div>
+          <div class="map-overlay-top">
+            <h2>Family Around the World</h2>
+            <p id="mapDesc"></p>
+          </div>
+        </div>
+        <div class="map-panel" id="mapPanel">
+          <div class="mp-head">
+            <span class="mp-label">Countries</span>
+            <span class="mp-count" id="mpCount"></span>
+          </div>
+          <div class="mp-list" id="mpList"></div>
+          <div class="mp-unset" id="mpUnset" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD/EDIT MODAL -->
+  <div class="mo" id="addModal">
+    <div class="md">
+      <h2 id="mdTitle">Add Family Member</h2>
+      <div class="pu">
+        <div class="pp" id="phPrev">👤</div>
+        <div class="pa">
+          <p>Photo (optional)</p>
+          <button class="btn" id="choosePhBtn">Choose</button>
+          <button class="btn btn-g" id="clearPhBtn" style="display:none">Remove</button>
+          <input type="file" id="phIn" class="hid" accept="image/*">
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>First Name *</label><input type="text" id="fFirst" placeholder="First name"></div>
+        <div class="fg"><label>Last Name</label><input type="text" id="fLast" placeholder="Last name"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>Gender</label><select id="fGender"><option value="male">Male</option><option value="female">Female</option></select></div>
+        <div class="fg"><label>Birth Year</label><input type="number" id="fBirth" placeholder="e.g. 1985"></div>
+      </div>
+      <div class="fg"><label>Country of Residence</label><select id="fCountry"><option value="">— Not set —</option></select></div>
+      <div class="fg" id="cityRow" style="display:none"><label>City / Municipality</label><input type="text" id="fCity" list="cityList" placeholder="e.g. Basel, London, Tokyo" autocomplete="off"><datalist id="cityList"></datalist></div>
+      <div class="fg"><label>Parent 1</label><select id="fP1"><option value="">— None (Root) —</option></select><div class="ht">Primary parent — determines the tree branch</div></div>
+      <div class="fg"><label>Parent 2</label><select id="fP2"><option value="">— None —</option></select></div>
+      <div class="fg"><label>Spouse</label><select id="fSp"><option value="">— None —</option></select></div>
+      <div class="fg"><label>Side</label><select id="fSide"><option value="">Auto-detect</option><option value="paternal">Dad's Side</option><option value="maternal">Mom's Side</option></select><div class="ht">Optional — helps organize the tree. Auto-detect inherits from parent.</div></div>
+      <div class="fg"><label>Notes</label><input type="text" id="fNotes" placeholder="e.g. Lives in Basel, 3 kids"></div>
+      <div class="md-ft">
+        <button class="btn btn-ego" id="setMeBtn" style="display:none">Set as Me</button>
+        <span style="flex:1"></span>
+        <button class="btn" id="cancelAddBtn">Cancel</button>
+        <button class="btn btn-d" id="delBtn" style="display:none">Delete</button>
+        <button class="btn btn-p" id="saveBtn">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPORT MODAL -->
+  <div class="mo" id="importModal">
+    <div class="md">
+      <h2>Import Family Tree</h2>
+      <p class="ed">Upload a previously exported .json file. This replaces current data.</p>
+      <div class="fd" id="fileDrop">
+        <div class="fi">📄</div>
+        <p>Click or drag & drop a .json file</p>
+        <div class="sf" id="selFile" style="display:none"></div>
+      </div>
+      <input type="file" id="fileIn" class="hid" accept=".json,application/json">
+      <div class="md-ft">
+        <button class="btn" id="cancelImpBtn">Cancel</button>
+        <button class="btn btn-p" id="impBtn" disabled>Import</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
