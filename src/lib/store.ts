@@ -41,6 +41,8 @@ export const filteredFriends = derived(
       return (
         f.name.toLowerCase().includes(q) ||
         f.metAt.toLowerCase().includes(q) ||
+        (f.city ?? '').toLowerCase().includes(q) ||
+        (f.country ?? '').toLowerCase().includes(q) ||
         f.notes.toLowerCase().includes(q) ||
         f.tags.some((t) => t.toLowerCase().includes(q))
       );
@@ -89,6 +91,8 @@ export function importJSON(text: string): number {
     level: (Math.min(7, Math.max(1, Number(d.level) || 4)) as FriendLevel),
     tags: Array.isArray(d.tags) ? d.tags.map(String) : [],
     metAt: String(d.metAt ?? ''),
+    city: String(d.city ?? ''),
+    country: String(d.country ?? ''),
     metDate: String(d.metDate ?? ''),
     lastContact: String(d.lastContact ?? ''),
     notes: String(d.notes ?? ''),

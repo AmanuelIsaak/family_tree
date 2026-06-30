@@ -55,7 +55,9 @@
             <span class="text-xs" style="color:{meta.hex}">{meta.label}</span>
           </div>
           <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            {pretty(friend.metDate)}{friend.metAt ? ` · ${friend.metAt}` : ''}
+            {pretty(friend.metDate)}{friend.metAt ? ` · ${friend.metAt}` : ''}{[friend.city, friend.country].filter(Boolean).length
+              ? ` · 📍 ${[friend.city, friend.country].filter(Boolean).join(', ')}`
+              : ''}
           </p>
         </button>
       </li>

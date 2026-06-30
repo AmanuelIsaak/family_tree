@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Friend, FriendLevel } from '../lib/types';
   import { LEVELS } from '../lib/levels';
+  import { COUNTRIES } from '../lib/countries';
   import { addFriend, updateFriend, removeFriend } from '../lib/store';
   import { toast } from '../lib/toast';
 
@@ -21,6 +22,8 @@
   let level = $state<FriendLevel>(init?.level ?? 4);
   let tags = $state(init?.tags.join(', ') ?? '');
   let metAt = $state(init?.metAt ?? '');
+  let city = $state(init?.city ?? '');
+  let country = $state(init?.country ?? '');
   let metDate = $state(init?.metDate ?? '');
   let lastContact = $state(init?.lastContact ?? '');
   let notes = $state(init?.notes ?? '');
@@ -39,6 +42,8 @@
         .map((t) => t.trim())
         .filter(Boolean),
       metAt: metAt.trim(),
+      city: city.trim(),
+      country: country.trim(),
       metDate,
       lastContact,
       notes: notes.trim(),
@@ -129,6 +134,25 @@
         <div>
           <label class="field-label" for="fm-last">Last contact</label>
           <input id="fm-last" type="date" class="field-input" bind:value={lastContact} />
+        </div>
+        <div>
+          <label class="field-label" for="fm-city">City</label>
+          <input id="fm-city" class="field-input" bind:value={city} placeholder="e.g. Zürich" />
+        </div>
+        <div>
+          <label class="field-label" for="fm-country">Country</label>
+          <input
+            id="fm-country"
+            class="field-input"
+            list="fm-country-list"
+            bind:value={country}
+            placeholder="e.g. Switzerland"
+          />
+          <datalist id="fm-country-list">
+            {#each COUNTRIES as c}
+              <option value={c}></option>
+            {/each}
+          </datalist>
         </div>
       </div>
 

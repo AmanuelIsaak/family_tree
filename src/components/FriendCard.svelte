@@ -11,6 +11,7 @@
   let { friend, onedit }: Props = $props();
 
   const meta = $derived(levelMeta(friend.level));
+  const place = $derived([friend.city, friend.country].filter(Boolean).join(', '));
 
   function initials(name: string): string {
     return name
@@ -45,8 +46,12 @@
     </div>
   </div>
 
+  {#if place}
+    <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">📍 {place}</p>
+  {/if}
+
   {#if friend.metAt}
-    <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">Met: {friend.metAt}</p>
+    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Met: {friend.metAt}</p>
   {/if}
 
   {#if friend.tags.length}

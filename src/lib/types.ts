@@ -9,6 +9,10 @@ export interface Friend {
   tags: string[];
   /** Where / how you met them. */
   metAt: string;
+  /** City they live in now (optional). */
+  city?: string;
+  /** Country they live in now (optional). */
+  country?: string;
   /** ISO date (YYYY-MM-DD) you met — drives the timeline view. */
   metDate: string;
   /** ISO date of last meaningful contact. */
