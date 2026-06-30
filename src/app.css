@@ -11,7 +11,7 @@
     @apply bg-slate-50 text-slate-900 antialiased;
   }
 
-  :global(.dark) body {
+  .dark body {
     @apply bg-slate-950 text-slate-100;
   }
 
