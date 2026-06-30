@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+
+  :global(.dark) body {
+    @apply bg-slate-950 text-slate-100;
+  }
+
+  /* Smooth color transitions when toggling theme */
+  body,
+  body * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+@layer components {
+  .field-label {
+    @apply mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400;
+  }
+
+  .field-input {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm
+      text-slate-900 outline-none transition
+      focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10
+      dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100
+      dark:focus:border-slate-400 dark:focus:ring-slate-100/10;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-slate-300 dark:bg-slate-700;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
