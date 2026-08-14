@@ -5,8 +5,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Instrument Serif', 'serif'],
-        body: ['Geist', '-apple-system', 'sans-serif'],
+        display: ['Fraunces', 'Noto Sans Ethiopic', 'Georgia', 'serif'],
+        body: ['Inter', 'Noto Sans Ethiopic', '-apple-system', 'sans-serif'],
       },
       colors: {
         // Friendship-level accent palette (level 1 = closest)

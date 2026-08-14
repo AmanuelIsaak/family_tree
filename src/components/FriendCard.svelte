@@ -2,6 +2,7 @@
   import type { Friend } from '../lib/types';
   import { levelMeta } from '../lib/levels';
   import { toggleFavorite } from '../lib/store';
+  import { placeLabel } from '../lib/countries';
 
   interface Props {
     friend: Friend;
@@ -11,7 +12,7 @@
   let { friend, onedit }: Props = $props();
 
   const meta = $derived(levelMeta(friend.level));
-  const place = $derived([friend.city, friend.country].filter(Boolean).join(', '));
+  const place = $derived(placeLabel(friend.city, friend.country));
 
   function initials(name: string): string {
     return name

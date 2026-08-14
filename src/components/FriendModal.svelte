@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Friend, FriendLevel } from '../lib/types';
   import { LEVELS } from '../lib/levels';
-  import { COUNTRIES } from '../lib/countries';
+  import CountrySelect from './CountrySelect.svelte';
   import { addFriend, updateFriend, removeFriend } from '../lib/store';
   import { toast } from '../lib/toast';
 
@@ -83,16 +83,20 @@
 >
   <!-- Dialog -->
   <div
-    class="w-full max-w-lg rounded-t-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 sm:rounded-2xl"
+    class="flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-2xl bg-white shadow-2xl dark:bg-slate-900 sm:max-h-[88vh] sm:rounded-2xl"
     onclick={(e) => e.stopPropagation()}
     onkeydown={() => {}}
     role="dialog"
     aria-modal="true"
     tabindex="-1"
   >
-    <h2 class="mb-4 font-display text-2xl">{editing ? 'Edit friend' : 'Add a friend'}</h2>
+    <div class="mx-auto mt-2.5 h-1 w-9 shrink-0 rounded-full bg-slate-300 dark:bg-slate-700 sm:hidden"></div>
 
-    <div class="space-y-4">
+    <h2 class="shrink-0 px-6 pb-1 pt-4 font-display text-2xl sm:pt-6">
+      {editing ? 'Edit friend' : 'Add a friend'}
+    </h2>
+
+    <div class="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
       <div>
         <label class="field-label" for="fm-name">Name</label>
         <input id="fm-name" class="field-input" bind:value={name} placeholder="Their name" />
@@ -141,18 +145,7 @@
         </div>
         <div>
           <label class="field-label" for="fm-country">Country</label>
-          <input
-            id="fm-country"
-            class="field-input"
-            list="fm-country-list"
-            bind:value={country}
-            placeholder="e.g. Switzerland"
-          />
-          <datalist id="fm-country-list">
-            {#each COUNTRIES as c}
-              <option value={c}></option>
-            {/each}
-          </datalist>
+          <CountrySelect id="fm-country" bind:value={country} />
         </div>
       </div>
 
@@ -168,22 +161,16 @@
       </label>
     </div>
 
-    <div class="mt-6 flex items-center gap-2">
+    <div
+      class="flex shrink-0 items-center gap-2 border-t border-slate-200 px-6 py-3.5 dark:border-slate-800"
+      style="padding-bottom: calc(0.875rem + env(safe-area-inset-bottom))"
+    >
       {#if editing}
-        <button
-          class="rounded-lg px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
-          onclick={del}>Delete</button
-        >
+        <button class="btn-danger" onclick={del}>Delete</button>
       {/if}
       <span class="flex-1"></span>
-      <button
-        class="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-        onclick={onclose}>Cancel</button
-      >
-      <button
-        class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
-        onclick={save}>{editing ? 'Save' : 'Add'}</button
-      >
+      <button class="btn-ghost" onclick={onclose}>Cancel</button>
+      <button class="btn-primary px-5" onclick={save}>{editing ? 'Save' : 'Add'}</button>
     </div>
   </div>
 </div>

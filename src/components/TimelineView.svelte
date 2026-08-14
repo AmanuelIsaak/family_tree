@@ -2,6 +2,7 @@
   import type { Friend } from '../lib/types';
   import { filteredFriends } from '../lib/store';
   import { levelMeta } from '../lib/levels';
+  import { placeLabel } from '../lib/countries';
 
   interface Props {
     onedit: (f: Friend) => void;
@@ -36,6 +37,7 @@
     {#each ordered as friend, i (friend.id)}
       {@const meta = levelMeta(friend.level)}
       {@const showYear = i === 0 || year(friend.metDate) !== year(ordered[i - 1].metDate)}
+      {@const place = placeLabel(friend.city, friend.country)}
       <li class="mb-6 ml-6">
         {#if showYear}
           <span class="absolute -left-[1.65rem] mt-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
@@ -55,9 +57,7 @@
             <span class="text-xs" style="color:{meta.hex}">{meta.label}</span>
           </div>
           <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            {pretty(friend.metDate)}{friend.metAt ? ` · ${friend.metAt}` : ''}{[friend.city, friend.country].filter(Boolean).length
-              ? ` · 📍 ${[friend.city, friend.country].filter(Boolean).join(', ')}`
-              : ''}
+            {pretty(friend.metDate)}{friend.metAt ? ` · ${friend.metAt}` : ''}{place ? ` · ${place}` : ''}
           </p>
         </button>
       </li>
