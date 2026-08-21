@@ -1,6 +1,5 @@
 import { writable, derived, get } from 'svelte/store';
 import type { FamilyMember, FamilyRoleId, FamilySide, FamilyView, Section } from './types';
-import { SAMPLE_FAMILY } from './familySampleData';
 import { generationOf, isDistantRole, isInLawRole, roleMeta } from './familyRoles';
 import { search } from './store';
 
@@ -44,7 +43,7 @@ function loadFamily(): FamilyMember[] {
   } catch {
     /* ignore corrupt storage */
   }
-  return SAMPLE_FAMILY;
+  return ensureSelf([]);
 }
 
 export const family = writable<FamilyMember[]>(loadFamily());

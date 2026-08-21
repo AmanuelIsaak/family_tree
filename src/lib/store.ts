@@ -1,6 +1,5 @@
 import { writable, derived, get } from 'svelte/store';
 import type { Friend, FriendLevel, Theme, View } from './types';
-import { SAMPLE_FRIENDS } from './sampleData';
 
 const FRIENDS_KEY = 'mycircle:friends';
 const THEME_KEY = 'mycircle:theme';
@@ -12,7 +11,7 @@ function loadFriends(): Friend[] {
   } catch {
     /* ignore corrupt storage */
   }
-  return SAMPLE_FRIENDS;
+  return [];
 }
 
 export const friends = writable<Friend[]>(loadFriends());
